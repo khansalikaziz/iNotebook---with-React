@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const connection_url=`mongodb+srv://admin:Salik9661874451@cluster0.y6j3n.mongodb.net/?retryWrites=true&w=majority`
+const connection_url=`mongodb+srv://admin:Salik9661874451@cluster0.y6j3n.mongodb.net/iNotebook`
 
 const connectToMongo = ()=>{
 
