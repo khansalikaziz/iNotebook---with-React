@@ -14,17 +14,18 @@ router.post('/createuser',[
     body('name','Enter a valid name').isLength({ min: 3 }),
     body('password','Password must be atleast 5 characters').isLength({ min: 5 }),
 ], async(req, res)=>{ 
+    let success=false;
     //If there are errors ,return bad requiest and errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() }); 
+      return res.status(400).json({success, errors: errors.array() }); 
     }
     //check whether the user with same email exists already
    try{
    let user=await User.findOne({email:req.body.email});
    
    if(user){
-    return res.status(400).json({error:'Sorry a user with this email already exists'});
+    return res.status(400).json({success,error:'Sorry a user with this email already exists'});
    }
    //Hashing password
    const salt =await bcrypt.genSalt(10);
@@ -44,7 +45,8 @@ router.post('/createuser',[
     //Synchronous Sign with default (HMAC SHA256){token}
     const authtoken= jwt.sign(data,JWT_SECRET);
     console.log(authtoken)
-    res.json({authtoken})
+    success=true;
+    res.json({success,authtoken})
     // res.json({user})
 }catch(error){
  console.error(error.message);
@@ -57,6 +59,7 @@ router.post('/login',[
   body('email','Enter a valid email').isEmail(),
   body('password','Password can not be blank').exists(),
 ], async(req, res)=>{ 
+  let success=false;
    //If there are errors ,return bad requiest and errors
    const errors = validationResult(req);
    if (!errors.isEmpty()) {
@@ -68,13 +71,15 @@ router.post('/login',[
     let user=await User.findOne({email});
     //if user doesnot exits raise error
     if(!user){
-      return res.status(400).json({error:"Please try to login with correct credentials"})
+      success=false;
+      return res.status(400).json({success,error:"Please try to login with correct credentials"})
 
     }
     //Comparing password which is already save in db
     const passwordCompare=await bcrypt.compare(password,user.password);
     if(!passwordCompare){
-      return res.status(400).json({error:"Please try to login with correct credentials"})
+      success=false;
+      return res.status(400).json({success,error:"Please try to login with correct credentials"})
     }
     //user data which i will be sending{i will be sending id as payload because that has index and unique} (payload)
     const data={
@@ -84,7 +89,8 @@ router.post('/login',[
     }
     //Synchronous Sign with default (HMAC SHA256){token}
     const authtoken= jwt.sign(data,JWT_SECRET);
-    res.send({authtoken})
+    success=true;
+    res.send({success,authtoken})
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Internal server Error") 
